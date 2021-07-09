@@ -9,7 +9,7 @@
     services:
       mongo:
         container_name: mongo
-        image: mongo:4.0.6
+        image: mongo:4.6
         ports:
           - 27017:27017
         command: mongod
