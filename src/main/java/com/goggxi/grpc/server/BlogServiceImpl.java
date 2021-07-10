@@ -4,12 +4,12 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.proto.blog.Blog;
-import com.proto.blog.BlogServiceGrpc;
-import com.proto.blog.CreateBlogRequest;
-import com.proto.blog.CreateBlogResponse;
+import com.mongodb.client.model.Filters;
+import com.proto.blog.*;
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 
 public class BlogServiceImpl extends BlogServiceGrpc.BlogServiceImplBase {
 
@@ -53,5 +53,45 @@ public class BlogServiceImpl extends BlogServiceGrpc.BlogServiceImplBase {
         responseObserver.onNext(response);
 
         responseObserver.onCompleted();
+    }
+
+    @Override
+    public void readBlog(ReadBlogRequest request, StreamObserver<ReadBlogResponse> responseObserver) {
+
+        System.out.println("Received read blog request");
+
+        String blog_id = request.getBlogId();
+
+        System.out.println("Searching for a blog ");
+        Document result = null;
+
+        try {
+            result = collection.find(Filters.eq("_id", new ObjectId(blog_id))) .first();
+        } catch (Exception e) {
+            responseObserver.onError(
+                    Status.NOT_FOUND
+                            .withDescription("The blog with the corresponding id was not found")
+                            .augmentDescription(e.getLocalizedMessage())
+                            .asRuntimeException()
+            );
+        }
+
+        if (result == null) {
+            System.out.println("Blog not found !");
+        } else {
+            System.out.println("Blog found, sending response ");
+            Blog blog = Blog.newBuilder()
+                    .setAuthorId(result.getString("author_id"))
+                    .setTitle(result.getString("title"))
+                    .setContent(result.getString("content"))
+                    .setId(blog_id)
+                    .build();
+
+            responseObserver.onNext(ReadBlogResponse.newBuilder()
+                    .setBlog(blog)
+                    .build());
+
+            responseObserver.onCompleted();
+        }
     }
 }

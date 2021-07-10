@@ -1,9 +1,6 @@
 package com.goggxi.grpc.client;
 
-import com.proto.blog.Blog;
-import com.proto.blog.BlogServiceGrpc;
-import com.proto.blog.CreateBlogRequest;
-import com.proto.blog.CreateBlogResponse;
+import com.proto.blog.*;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
@@ -24,17 +21,34 @@ public class BlogClient {
         BlogServiceGrpc.BlogServiceBlockingStub blogClient = BlogServiceGrpc.newBlockingStub(channel);
 
         Blog blog = Blog.newBuilder()
-                .setAuthorId("ipang")
+                .setAuthorId("test read")
                 .setTitle("learning gRPC")
                 .setContent("insert data to mongodb")
                 .build();
 
-        CreateBlogResponse response =  blogClient.createBlog(CreateBlogRequest.newBuilder()
+        CreateBlogResponse createBlogResponse =  blogClient.createBlog(CreateBlogRequest.newBuilder()
                 .setBlog(blog )
                 .build());
 
         System.out.println("Received create blog response");
-        System.out.println(response.toString() );
+        System.out.println(createBlogResponse.toString() );
+
+        String blogId = createBlogResponse .getBlog().getId();
+
+        System.out.println("Reading blog ..");
+        ReadBlogResponse readBlogResponse = blogClient.readBlog(ReadBlogRequest.newBuilder()
+                .setBlogId(blogId)
+                .build());
+
+        System.out.println(readBlogResponse.toString());
+
+//        trigger not found error 
+//        System.out.println("read blog with not existing id...");
+//        ReadBlogResponse readBlogResponseNotFound = blogClient.readBlog(ReadBlogRequest.newBuilder()
+//                .setBlogId("no-data")
+//                .build());
+
+//        System.out.println(readBlogResponseNotFound.toString() );
 
     }
 
