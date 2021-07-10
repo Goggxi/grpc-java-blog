@@ -42,13 +42,28 @@ public class BlogClient {
 
         System.out.println(readBlogResponse.toString());
 
-//        trigger not found error 
+//        trigger not found error
 //        System.out.println("read blog with not existing id...");
 //        ReadBlogResponse readBlogResponseNotFound = blogClient.readBlog(ReadBlogRequest.newBuilder()
 //                .setBlogId("no-data")
 //                .build());
 
 //        System.out.println(readBlogResponseNotFound.toString() );
+
+        Blog newBlog = Blog.newBuilder()
+                .setId(blogId)
+                .setAuthorId("test updated 2")
+                .setTitle("learning gRPC (updated 2)")
+                .setContent("insert data to mongodb (updated 2)")
+                .build();
+
+        System.out.println("Updating blog...");
+        UpdateBlogResponse updateBlogResponse = blogClient.updateBlog(UpdateBlogRequest.newBuilder()
+                .setBlog(newBlog)
+                .build());
+
+        System.out.println("Updated Blog");
+        System.out.println(updateBlogResponse.toString());
 
     }
 
