@@ -5,6 +5,7 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.result.DeleteResult;
 import com.proto.blog.*;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
@@ -78,6 +79,10 @@ public class BlogServiceImpl extends BlogServiceGrpc.BlogServiceImplBase {
 
         if (result == null) {
             System.out.println("Blog not found !");
+            responseObserver.onError(
+                    Status.NOT_FOUND
+                            .withDescription("The blog with the corresponding id was not found")
+                            .asRuntimeException());
         } else {
             System.out.println("Blog found, sending response ");
             Blog blog = documentToBlog(result);
@@ -133,6 +138,45 @@ public class BlogServiceImpl extends BlogServiceGrpc.BlogServiceImplBase {
             responseObserver.onNext(
                     UpdateBlogResponse.newBuilder()
                             .setBlog(documentToBlog(replacement))
+                            .build()
+            );
+
+            responseObserver.onCompleted();
+        }
+
+    }
+
+    @Override
+    public void deleteBlog(DeleteBlogRequest request, StreamObserver<DeleteBlogResponse> responseObserver) {
+
+        System.out.println("Received delete blog...");
+        String blogId = request.getBlogId();
+
+        DeleteResult result = null;
+
+        try {
+            result = collection.deleteOne(Filters.eq("_id", new ObjectId(blogId)));
+        } catch (Exception e) {
+            System.out.println("blog not found");
+            responseObserver.onError(
+                    Status.NOT_FOUND
+                            .withDescription("The blog with the corresponding id was not found")
+                            .augmentDescription(e.getLocalizedMessage())
+                            .asRuntimeException()
+            );
+        }
+
+        if (result.getDeletedCount() == 0) {
+            System.out.println("blog not found");
+            responseObserver.onError(
+                    Status.NOT_FOUND
+                            .withDescription("The blog with the corresponding id was not found")
+                            .asRuntimeException());
+        } else {
+            System.out.println("blog was deleted");
+            responseObserver.onNext(
+                    DeleteBlogResponse.newBuilder()
+                            .setBlogId(blogId)
                             .build()
             );
 
