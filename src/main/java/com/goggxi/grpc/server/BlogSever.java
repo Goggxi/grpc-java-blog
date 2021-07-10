@@ -2,6 +2,7 @@ package com.goggxi.grpc.server;
 
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
+import io.grpc.protobuf.services.ProtoReflectionService;
 
 import java.io.IOException;
 
@@ -11,6 +12,7 @@ public class BlogSever {
 
         Server server = ServerBuilder.forPort(50053)
                 .addService(new BlogServiceImpl())
+                .addService(ProtoReflectionService.newInstance())
                 .build();
 
         server.start();

@@ -40,3 +40,11 @@ mongo
 mongo --host localhost --port 27017
 
 ```
+
+# evans test
+* in terminal
+```text
+evans -p 50053 -r 
+```
+
+
